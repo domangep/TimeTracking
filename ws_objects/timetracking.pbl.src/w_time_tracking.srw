@@ -42,7 +42,7 @@ global w_time_tracking w_time_tracking
 
 type variables
 Protected:
-constant integer	CST_RUNNGING 	= 1
+constant integer	CST_RUNNING 		= 1
 constant integer	CST_PAUSED		= 2
 constant integer	CST_STOP			= 3
 constant integer	CST_FINISHED		= 4
@@ -50,7 +50,6 @@ constant integer	CST_FINISHED		= 4
 string is_null
 
 end variables
-
 forward prototypes
 public subroutine of_start (long row)
 public subroutine of_pause (long row)
@@ -83,7 +82,7 @@ dw_1.setfocus()
 
 end event
 
-public subroutine of_start (long row);dw_1.object.status[row] = cst_runnging
+public subroutine of_start (long row);dw_1.object.status[row] = cst_running
 timer(1)
 end subroutine
 
@@ -135,7 +134,7 @@ long	ll_seconds
 ll_limit = dw_1.rowcount()
 
 for ll_i = 1 to ll_limit
-	if long( dw_1.object.status[ll_i]) = cst_runnging then
+	if long( dw_1.object.status[ll_i]) = cst_running then
 		
 		ll_days 		= long( dw_1.object.days[ll_i])
 		ll_hours 		= long( dw_1.object.hours[ll_i])
