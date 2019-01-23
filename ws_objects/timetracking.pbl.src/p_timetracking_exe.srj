@@ -12,3 +12,6 @@ FVS:1.0.0.1
 FVN:1,0,0,1
 MAN:0,asInvoker,0
 PBD:timetracking.pbl,,0
+OBJ:g:\projects\pb2017r3\timetracking\timetracking.pbl,d_tracking_time,d
+OBJ:g:\projects\pb2017r3\timetracking\timetracking.pbl,w_time_tracking,w
+OBJ:G:\PROJECTS\PB2017R3\TimeTracking\timetracking.pbl,timetracking,a
