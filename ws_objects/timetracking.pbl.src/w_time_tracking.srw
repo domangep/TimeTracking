@@ -10,8 +10,6 @@ type dw_1 from datawindow within w_time_tracking
 end type
 type pb_quit from picturebutton within w_time_tracking
 end type
-type pb_saveas from picturebutton within w_time_tracking
-end type
 type pb_save from picturebutton within w_time_tracking
 end type
 type pb_open from picturebutton within w_time_tracking
@@ -20,7 +18,7 @@ end forward
 
 global type w_time_tracking from window
 integer width = 3703
-integer height = 1288
+integer height = 1092
 boolean titlebar = true
 string title = "Time tracking"
 boolean controlmenu = true
@@ -31,14 +29,12 @@ string icon = "AppIcon!"
 boolean center = true
 event ue_open ( )
 event ue_save ( )
-event ue_saveas ( )
 event ue_add ( )
 event ue_delete ( )
 pb_delete pb_delete
 pb_add pb_add
 dw_1 dw_1
 pb_quit pb_quit
-pb_saveas pb_saveas
 pb_save pb_save
 pb_open pb_open
 end type
@@ -46,10 +42,27 @@ global w_time_tracking w_time_tracking
 
 type variables
 Protected:
+constant integer	CST_RUNNGING 	= 1
+constant integer	CST_PAUSED		= 2
+constant integer	CST_STOP			= 3
+constant integer	CST_FINISHED		= 4
+
 string is_null
 
 end variables
-event ue_open();dw_1.importfile(is_null)
+forward prototypes
+public subroutine of_start (long row)
+public subroutine of_pause (long row)
+public subroutine of_stop (long row)
+public subroutine of_finish (long row)
+end prototypes
+
+event ue_open();dw_1.reset()
+dw_1.importfile(is_null)
+end event
+
+event ue_save();dw_1.accepttext( )
+dw_1.saveas(is_null)
 
 end event
 
@@ -69,19 +82,31 @@ dw_1.setfocus()
 
 end event
 
+public subroutine of_start (long row);dw_1.object.status[row] = cst_runnging
+timer(1)
+end subroutine
+
+public subroutine of_pause (long row);dw_1.object.status[row] = cst_paused
+end subroutine
+
+public subroutine of_stop (long row);dw_1.object.status[row] = cst_stop
+end subroutine
+
+public subroutine of_finish (long row);dw_1.object.status[row] = cst_finished
+
+end subroutine
+
 on w_time_tracking.create
 this.pb_delete=create pb_delete
 this.pb_add=create pb_add
 this.dw_1=create dw_1
 this.pb_quit=create pb_quit
-this.pb_saveas=create pb_saveas
 this.pb_save=create pb_save
 this.pb_open=create pb_open
 this.Control[]={this.pb_delete,&
 this.pb_add,&
 this.dw_1,&
 this.pb_quit,&
-this.pb_saveas,&
 this.pb_save,&
 this.pb_open}
 end on
@@ -91,13 +116,52 @@ destroy(this.pb_delete)
 destroy(this.pb_add)
 destroy(this.dw_1)
 destroy(this.pb_quit)
-destroy(this.pb_saveas)
 destroy(this.pb_save)
 destroy(this.pb_open)
 end on
 
 event open;SetNull( is_null )
 
+end event
+
+event timer;long 	ll_i
+long 	ll_limit
+long 	ll_days
+long 	ll_hours
+long	ll_minutes
+long	ll_seconds
+
+ll_limit = dw_1.rowcount()
+
+for ll_i = 1 to ll_limit
+	if long( dw_1.object.status[ll_i]) = cst_runnging then
+		
+		ll_days 		= long( dw_1.object.days[ll_i])
+		ll_hours 		= long( dw_1.object.hours[ll_i])
+		ll_minutes	= long( dw_1.object.minutes[ll_i])
+		ll_seconds 	= long( dw_1.object.seconds[ll_i]) 
+		
+		ll_seconds++
+		if ll_seconds = 60 then
+			ll_seconds = 0
+			ll_minutes ++
+			if ll_minutes = 60 then
+				ll_minutes = 0
+				ll_hours ++
+				if ll_hours = 24 then
+					ll_hours = 0
+					ll_days ++
+				end if
+			end if
+		end if
+		
+		dw_1.object.days[ll_i]		= ll_days 
+		dw_1.object.hours[ll_i]		= ll_hours
+		dw_1.object.minutes[ll_i]	= ll_minutes
+		dw_1.object.seconds[ll_i]	= ll_seconds
+				
+	end if
+next
 end event
 
 type pb_delete from picturebutton within w_time_tracking
@@ -143,7 +207,7 @@ type dw_1 from datawindow within w_time_tracking
 integer x = 242
 integer y = 4
 integer width = 3410
-integer height = 1176
+integer height = 980
 integer taborder = 40
 string title = "none"
 string dataobject = "d_tracking_time"
@@ -153,8 +217,20 @@ boolean livescroll = true
 borderstyle borderstyle = stylelowered!
 end type
 
+event buttonclicked;if row < 1 then return
+
+choose case dwo.name
+	case 'b_start'
+		
+	case 'b_pause'
+	case 'b_stop'
+	case 'b_finish'
+end choose
+
+end event
+
 type pb_quit from picturebutton within w_time_tracking
-integer y = 1000
+integer y = 800
 integer width = 215
 integer height = 180
 integer taborder = 40
@@ -170,26 +246,6 @@ alignment htextalign = left!
 end type
 
 event clicked;close(parent)
-
-end event
-
-type pb_saveas from picturebutton within w_time_tracking
-integer y = 800
-integer width = 215
-integer height = 180
-integer taborder = 30
-integer textsize = -10
-integer weight = 400
-fontcharset fontcharset = ansi!
-fontpitch fontpitch = variable!
-fontfamily fontfamily = swiss!
-string facename = "Tahoma"
-boolean flatstyle = true
-string picturename = "SaveAs!"
-alignment htextalign = left!
-end type
-
-event clicked;parent.event ue_saveas()
 
 end event
 

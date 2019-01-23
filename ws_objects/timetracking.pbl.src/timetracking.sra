@@ -15,6 +15,9 @@ string appname = "timetracking"
 end type
 global timetracking timetracking
 
+type variables
+
+end variables
 on timetracking.create
 appname="timetracking"
 message=create message
@@ -33,6 +36,5 @@ destroy(message)
 end on
 
 event open;open(w_time_tracking)
-
 end event
 
