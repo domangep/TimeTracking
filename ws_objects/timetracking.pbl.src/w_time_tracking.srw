@@ -17,18 +17,17 @@ end type
 end forward
 
 global type w_time_tracking from window
-integer width = 3703
+integer width = 3758
 integer height = 1092
 boolean titlebar = true
 string title = "Time tracking"
 boolean controlmenu = true
 boolean minbox = true
-boolean maxbox = true
 long backcolor = 67108864
 string icon = "AppIcon!"
 boolean center = true
 event ue_open ( )
-event ue_save ( )
+event ue_save ( string filename )
 event ue_add ( )
 event ue_delete ( )
 pb_delete pb_delete
@@ -48,38 +47,54 @@ constant integer	CST_STOP			= 3
 constant integer	CST_FINISHED		= 4
 
 string is_null
-
+string is_docpath
+string is_docname
 end variables
+
 forward prototypes
 public subroutine of_start (long row)
 public subroutine of_pause (long row)
 public subroutine of_stop (long row)
 public subroutine of_finish (long row)
+public function integer of_checkpendingchanges ()
 end prototypes
 
-event ue_open();dw_1.reset()
-dw_1.importfile(is_null)
+event ue_open();integer li_rc
+
+timer(0)
+
+if this.of_checkpendingchanges( ) = 1 then
+	this.event ue_save(is_docpath)
+end if
+
+li_rc = getfileopenname( "Select file", is_docpath, is_docname, "xml", "XML files (*.xml),*.xml" )
+if li_rc < 1 then return 
+
+dw_1.reset()
+dw_1.importfile(is_docpath, xml!)
+dw_1.resetupdate( )
+
+this.title = "Time tracking - " + is_docpath
+
 end event
 
-event ue_save();dw_1.accepttext( )
-dw_1.saveas(is_null)
-
+event ue_save(string filename);dw_1.accepttext( )
+dw_1.saveas(filename,xml!,true)
+dw_1.resetupdate( )
 end event
 
-event ue_add();dw_1.insertrow(0)
+event ue_add();dw_1.Scrolltorow(dw_1.insertrow(0))
 dw_1.Setcolumn(1)
 dw_1.SetFocus()
-
 end event
 
 event ue_delete();integer li_rc
 
-li_rc = messagebox("Delete row ?","Are-you sure you want to delete this row ?", exclamation!, yesno!)
+li_rc = messagebox("Delete row ?","Are-you sure you want to delete the task labelled " + string( dw_1.object.task[dw_1.getrow()]) + " ?", exclamation!, yesno!)
 if li_rc = 2 then return 
 
 dw_1.deleterow(0)
 dw_1.setfocus()
-
 end event
 
 public subroutine of_start (long row);dw_1.object.status[row] = cst_running
@@ -95,6 +110,16 @@ end subroutine
 public subroutine of_finish (long row);dw_1.object.status[row] = cst_finished
 
 end subroutine
+
+public function integer of_checkpendingchanges ();integer li_rc
+
+if dw_1.modifiedcount( ) > 0 or dw_1.deletedcount( ) > 0 then
+	li_rc = Messagebox("Save changes ?","Changes are pending do you want to save them ?", exclamation!, yesno! )
+end if
+
+return li_rc
+
+end function
 
 on w_time_tracking.create
 this.pb_delete=create pb_delete
@@ -164,8 +189,18 @@ for ll_i = 1 to ll_limit
 next
 end event
 
+event closequery;timer(0)
+
+if this.of_checkpendingchanges( ) = 1 then
+	this.post event ue_save(is_docpath)
+	return 1
+end if
+
+end event
+
 type pb_delete from picturebutton within w_time_tracking
-integer y = 400
+integer x = 18
+integer y = 412
 integer width = 215
 integer height = 180
 integer taborder = 60
@@ -185,7 +220,8 @@ event clicked;parent.Event ue_delete()
 end event
 
 type pb_add from picturebutton within w_time_tracking
-integer y = 200
+integer x = 18
+integer y = 212
 integer width = 215
 integer height = 180
 integer taborder = 50
@@ -204,9 +240,9 @@ event clicked;parent.Event ue_add()
 end event
 
 type dw_1 from datawindow within w_time_tracking
-integer x = 242
-integer y = 4
-integer width = 3410
+integer x = 261
+integer y = 16
+integer width = 3461
 integer height = 980
 integer taborder = 40
 string title = "none"
@@ -221,16 +257,20 @@ event buttonclicked;if row < 1 then return
 
 choose case dwo.name
 	case 'b_start'
-		
+		parent.of_start( row )
 	case 'b_pause'
+		parent.of_pause( row )
 	case 'b_stop'
+		parent.of_stop( row )
 	case 'b_finish'
+		parent.of_finish( row )
 end choose
 
 end event
 
 type pb_quit from picturebutton within w_time_tracking
-integer y = 800
+integer x = 18
+integer y = 812
 integer width = 215
 integer height = 180
 integer taborder = 40
@@ -250,7 +290,8 @@ event clicked;close(parent)
 end event
 
 type pb_save from picturebutton within w_time_tracking
-integer y = 600
+integer x = 18
+integer y = 612
 integer width = 215
 integer height = 180
 integer taborder = 20
@@ -265,11 +306,12 @@ string picturename = "Save!"
 alignment htextalign = left!
 end type
 
-event clicked;parent.event ue_save()
-
+event clicked;parent.event ue_save(is_docpath)
 end event
 
 type pb_open from picturebutton within w_time_tracking
+integer x = 18
+integer y = 12
 integer width = 215
 integer height = 180
 integer taborder = 10
