@@ -50,6 +50,7 @@ constant integer	CST_FINISHED		= 4
 string is_null
 
 end variables
+
 forward prototypes
 public subroutine of_start (long row)
 public subroutine of_pause (long row)
