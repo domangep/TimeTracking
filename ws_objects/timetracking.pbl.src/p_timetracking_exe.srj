@@ -1,7 +1,7 @@
 ﻿$PBExportHeader$p_timetracking_exe.srj
 $PBExportComments$Generated Application Executable Project
-EXE:timetracking.exe,,0,0,1
-CMP:0,0,0,2,0,0,1
+EXE:timetracking.exe,,0,1,1
+CMP:1,0,0,2,0,0,1
 COM:dP Software
 DES:Easy Task Time Tracking tool
 CPY:(c) 2019 dP Software
