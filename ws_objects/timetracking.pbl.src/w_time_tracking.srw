@@ -44,6 +44,31 @@ pb_open pb_open
 end type
 global w_time_tracking w_time_tracking
 
+type variables
+Protected:
+string is_null
+
+end variables
+event ue_open();dw_1.importfile(is_null)
+
+end event
+
+event ue_add();dw_1.insertrow(0)
+dw_1.Setcolumn(1)
+dw_1.SetFocus()
+
+end event
+
+event ue_delete();integer li_rc
+
+li_rc = messagebox("Delete row ?","Are-you sure you want to delete this row ?", exclamation!, yesno!)
+if li_rc = 2 then return 
+
+dw_1.deleterow(0)
+dw_1.setfocus()
+
+end event
+
 on w_time_tracking.create
 this.pb_delete=create pb_delete
 this.pb_add=create pb_add
@@ -70,6 +95,10 @@ destroy(this.pb_saveas)
 destroy(this.pb_save)
 destroy(this.pb_open)
 end on
+
+event open;SetNull( is_null )
+
+end event
 
 type pb_delete from picturebutton within w_time_tracking
 integer y = 400
