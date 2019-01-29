@@ -2,6 +2,8 @@
 forward
 global type w_time_tracking from window
 end type
+type pb_edit from picturebutton within w_time_tracking
+end type
 type pb_delete from picturebutton within w_time_tracking
 end type
 type pb_add from picturebutton within w_time_tracking
@@ -14,28 +16,33 @@ type pb_save from picturebutton within w_time_tracking
 end type
 type pb_open from picturebutton within w_time_tracking
 end type
+type dw_2 from datawindow within w_time_tracking
+end type
 end forward
 
 global type w_time_tracking from window
 integer width = 3758
-integer height = 1092
+integer height = 1292
 boolean titlebar = true
 string title = "Time tracking"
 boolean controlmenu = true
 boolean minbox = true
 long backcolor = 67108864
-string icon = "AppIcon!"
+string icon = "Application5!"
 boolean center = true
 event ue_open ( )
 event ue_save ( string filename )
 event ue_add ( )
 event ue_delete ( )
+event ue_edit ( )
+pb_edit pb_edit
 pb_delete pb_delete
 pb_add pb_add
 dw_1 dw_1
 pb_quit pb_quit
 pb_save pb_save
 pb_open pb_open
+dw_2 dw_2
 end type
 global w_time_tracking w_time_tracking
 
@@ -45,6 +52,8 @@ constant integer	CST_RUNNING 		= 1
 constant integer	CST_PAUSED		= 2
 constant integer	CST_STOP			= 3
 constant integer	CST_FINISHED		= 4
+
+boolean	ib_edit
 
 string is_null
 string is_docpath
@@ -74,6 +83,8 @@ dw_1.reset()
 dw_1.importfile(is_docpath, xml!)
 dw_1.resetupdate( )
 
+dw_1.sharedata(dw_2)
+
 this.title = "Time tracking - " + is_docpath
 
 end event
@@ -95,6 +106,22 @@ if li_rc = 2 then return
 
 dw_1.deleterow(0)
 dw_1.setfocus()
+end event
+
+event ue_edit();ib_edit = not( ib_edit )
+
+dw_1.visible = not ib_edit
+dw_2.visible = ib_edit
+
+if ib_edit then
+	timer(0)
+	dw_2.setfocus()
+else
+	timer(1)
+	dw_1.setfocus()
+end if
+
+dw_1.accepttext()
 end event
 
 public subroutine of_start (long row);dw_1.object.status[row] = cst_running
@@ -122,27 +149,33 @@ return li_rc
 end function
 
 on w_time_tracking.create
+this.pb_edit=create pb_edit
 this.pb_delete=create pb_delete
 this.pb_add=create pb_add
 this.dw_1=create dw_1
 this.pb_quit=create pb_quit
 this.pb_save=create pb_save
 this.pb_open=create pb_open
-this.Control[]={this.pb_delete,&
+this.dw_2=create dw_2
+this.Control[]={this.pb_edit,&
+this.pb_delete,&
 this.pb_add,&
 this.dw_1,&
 this.pb_quit,&
 this.pb_save,&
-this.pb_open}
+this.pb_open,&
+this.dw_2}
 end on
 
 on w_time_tracking.destroy
+destroy(this.pb_edit)
 destroy(this.pb_delete)
 destroy(this.pb_add)
 destroy(this.dw_1)
 destroy(this.pb_quit)
 destroy(this.pb_save)
 destroy(this.pb_open)
+destroy(this.dw_2)
 end on
 
 event open;SetNull( is_null )
@@ -198,9 +231,30 @@ end if
 
 end event
 
+type pb_edit from picturebutton within w_time_tracking
+integer x = 18
+integer y = 212
+integer width = 215
+integer height = 180
+integer taborder = 50
+integer textsize = -10
+integer weight = 400
+fontcharset fontcharset = ansi!
+fontpitch fontpitch = variable!
+fontfamily fontfamily = swiss!
+string facename = "Tahoma"
+boolean flatstyle = true
+string picturename = "Edit_2!"
+alignment htextalign = left!
+end type
+
+event clicked;parent.event ue_edit()
+
+end event
+
 type pb_delete from picturebutton within w_time_tracking
 integer x = 18
-integer y = 412
+integer y = 612
 integer width = 215
 integer height = 180
 integer taborder = 60
@@ -221,7 +275,7 @@ end event
 
 type pb_add from picturebutton within w_time_tracking
 integer x = 18
-integer y = 212
+integer y = 412
 integer width = 215
 integer height = 180
 integer taborder = 50
@@ -243,7 +297,7 @@ type dw_1 from datawindow within w_time_tracking
 integer x = 261
 integer y = 16
 integer width = 3461
-integer height = 980
+integer height = 1172
 integer taborder = 40
 string title = "none"
 string dataobject = "d_tracking_time"
@@ -270,7 +324,7 @@ end event
 
 type pb_quit from picturebutton within w_time_tracking
 integer x = 18
-integer y = 812
+integer y = 1012
 integer width = 215
 integer height = 180
 integer taborder = 40
@@ -291,7 +345,7 @@ end event
 
 type pb_save from picturebutton within w_time_tracking
 integer x = 18
-integer y = 612
+integer y = 812
 integer width = 215
 integer height = 180
 integer taborder = 20
@@ -329,4 +383,16 @@ end type
 event clicked;parent.event ue_open()
 
 end event
+
+type dw_2 from datawindow within w_time_tracking
+integer x = 261
+integer y = 16
+integer width = 3461
+integer height = 1172
+integer taborder = 60
+string title = "none"
+string dataobject = "d_tracking_time_edit"
+boolean livescroll = true
+borderstyle borderstyle = stylelowered!
+end type
 
