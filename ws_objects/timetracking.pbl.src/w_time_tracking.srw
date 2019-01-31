@@ -35,6 +35,9 @@ event ue_save ( string filename )
 event ue_add ( )
 event ue_delete ( )
 event ue_edit ( )
+event ue_copy ( )
+event ue_copyjira ( )
+event ue_context_menu ( )
 pb_edit pb_edit
 pb_delete pb_delete
 pb_add pb_add
@@ -66,6 +69,7 @@ public subroutine of_pause (long row)
 public subroutine of_stop (long row)
 public subroutine of_finish (long row)
 public function integer of_checkpendingchanges ()
+public function integer of_getjiratime (long row, ref string jiratime)
 end prototypes
 
 event ue_open();integer li_rc
@@ -124,6 +128,25 @@ end if
 dw_1.accepttext()
 end event
 
+event ue_copyjira();integer	li_rc
+long		ll_row
+string 	ls_jiratime
+
+ll_row = dw_1.getrow()
+if ll_row < 1 then return 
+
+li_rc = of_getjiratime( ll_row, ls_jiratime )
+
+clipboard( ls_jiratime )
+end event
+
+event ue_context_menu();m_contextual lm_menu
+
+lm_menu = create m_contextual
+
+lm_menu.m_edit.popmenu( pointerx(), pointery() )
+end event
+
 public subroutine of_start (long row);dw_1.object.status[row] = cst_running
 timer(1)
 end subroutine
@@ -145,6 +168,54 @@ if dw_1.modifiedcount( ) > 0 or dw_1.deletedcount( ) > 0 then
 end if
 
 return li_rc
+
+end function
+
+public function integer of_getjiratime (long row, ref string jiratime);integer	li_days
+integer	li_hours
+integer	li_minutes
+integer	li_weeks
+long		ll_seconds
+string		ls_jiratime
+
+if isnull( row) or row < 1 or row > dw_1.rowcount( ) then return -1
+
+ll_seconds   = long( dw_1.object.days[row] ) * ( 3 * 8 * 3600 )
+ll_seconds += long( dw_1.object.hours[row] ) * 3600
+ll_seconds += long( dw_1.object.minutes[row] ) * 60
+ll_seconds  += long( dw_1.object.seconds[row] )
+
+li_weeks = ll_seconds / ( 5 * 8 * 3600 )
+ll_seconds -= li_weeks * ( 5 * 8 * 3600 )
+
+li_days = ll_seconds / (8 * 3600)
+ll_seconds -=  li_days * (8 * 3600)
+
+li_hours = ll_seconds / 3600
+ll_seconds -= li_hours * 3600
+
+li_minutes = ll_seconds / 60
+ll_seconds -= li_minutes * 60
+
+if li_weeks > 0 then
+	ls_jiratime = string(li_weeks)+"w "
+end if
+
+if li_days > 0 then
+	ls_jiratime += string(li_days )+"d "
+end if
+
+if li_hours > 0 then
+	ls_jiratime += string(li_hours )+"h "
+end if
+
+if li_minutes > 0 then
+	ls_jiratime += string(li_minutes )+"m "
+end if
+
+jiratime = ls_jiratime
+
+return 1
 
 end function
 
@@ -322,6 +393,9 @@ end choose
 
 end event
 
+event rbuttondown;parent.event ue_context_menu()
+end event
+
 type pb_quit from picturebutton within w_time_tracking
 integer x = 18
 integer y = 1012
@@ -395,4 +469,8 @@ string dataobject = "d_tracking_time_edit"
 boolean livescroll = true
 borderstyle borderstyle = stylelowered!
 end type
+
+event rbuttondown;parent.event ue_context_menu()
+
+end event
 
