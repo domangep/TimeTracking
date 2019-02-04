@@ -294,7 +294,7 @@ next
 end event
 
 event closequery;timer(0)
-
+ 
 if this.of_checkpendingchanges( ) = 1 then
 	this.post event ue_save(is_docpath)
 	return 1

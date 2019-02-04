@@ -58,6 +58,7 @@ end type
 on m_edit.create
 call super::create
 this.text = "Edit"
+this.microhelp = " "
 this.menutextcolor = 134217735
 this.menubackcolor = 134217732
 this.menuhighlightcolor = 134217741
