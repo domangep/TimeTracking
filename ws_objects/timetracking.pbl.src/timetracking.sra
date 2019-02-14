@@ -12,12 +12,16 @@ end forward
 
 global type timetracking from application
 string appname = "timetracking"
+long richtextedittype = 0
+long richtexteditversion = 0
+string richtexteditkey = ""
 end type
 global timetracking timetracking
 
 type variables
 
 end variables
+
 on timetracking.create
 appname="timetracking"
 message=create message

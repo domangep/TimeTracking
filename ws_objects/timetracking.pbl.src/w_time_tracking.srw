@@ -28,7 +28,7 @@ string title = "Time tracking"
 boolean controlmenu = true
 boolean minbox = true
 long backcolor = 67108864
-string icon = "Application5!"
+string icon = "TimeTracking.ico"
 boolean center = true
 event ue_open ( )
 event ue_save ( string filename )
