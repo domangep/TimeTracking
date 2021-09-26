@@ -22,13 +22,15 @@ end forward
 
 global type w_time_tracking from window
 integer width = 3758
-integer height = 1292
+integer height = 1280
 boolean titlebar = true
 string title = "Time tracking"
 boolean controlmenu = true
 boolean minbox = true
+windowtype windowtype = popup!
 long backcolor = 67108864
 string icon = "TimeTracking.ico"
+boolean palettewindow = true
 boolean center = true
 event ue_open ( )
 event ue_save ( string filename )
@@ -180,7 +182,7 @@ string		ls_jiratime
 
 if isnull( row) or row < 1 or row > dw_1.rowcount( ) then return -1
 
-ll_seconds   = long( dw_1.object.days[row] ) * ( 3 * 8 * 3600 )
+ll_seconds   = long( dw_1.object.days[row] ) * ( 8 * 3600 )
 ll_seconds += long( dw_1.object.hours[row] ) * 3600
 ll_seconds += long( dw_1.object.minutes[row] ) * 60
 ll_seconds  += long( dw_1.object.seconds[row] )
@@ -250,7 +252,7 @@ destroy(this.dw_2)
 end on
 
 event open;SetNull( is_null )
-
+dw_1.sharedata(dw_2)
 end event
 
 event timer;long 	ll_i
